@@ -1,8 +1,37 @@
-package mower
+package main
 
 import (
+	"fmt"
 	"github.com/ouesfa/go-mower/models"
+	"github.com/ouesfa/go-mower/parser"
 )
+
+func main() {
+	lines := `5 5
+1 2 N
+LFLFLFLFF
+sdf dsf sdcx
+FFRFFRFRRF
+3 3 E
+FFRFFRFRRF
+3 3 E
+fdgs sfdg
+3 3 E dsf
+FFRFFRFRRF`
+
+	boundaries, mowers, actions := parser.Parse(lines)
+	var movedMowers []models.Mower
+	for i, mowerWithIndex := range mowers {
+		mowerCorrespondsToAction := mowerWithIndex.Index-actions[i].Index == 1
+		if mowerCorrespondsToAction {
+			for _, instruction := range actions[i].Instructions {
+				mowerWithIndex.Mower = move(instruction, mowerWithIndex.Mower, boundaries)
+			}
+			movedMowers = append(movedMowers, mowerWithIndex.Mower)
+		}
+	}
+	fmt.Println(movedMowers)
+}
 
 func move(instruction rune, mower models.Mower, boundaries models.Boundaries) models.Mower {
 	switch instruction {

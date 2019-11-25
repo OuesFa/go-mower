@@ -4,58 +4,80 @@ import (
 	"github.com/alexflint/go-restructure"
 	"github.com/ouesfa/go-mower/models"
 	"log"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
-func parse(input string) (models.Boundaries, []models.Mower, []models.Action) {
+func Parse(input string) (models.Boundaries, []struct {
+	Index int
+	models.Mower
+}, []struct {
+	Index int
+	models.Action
+}) {
 	lines := strings.Split(input, "\n")
 	boundaries := ParseBoundaries(lines[0])
-	var actions []models.Action
-	var mowers []models.Mower
+	var actions []struct {
+		Index int
+		models.Action
+	}
+	var mowers []struct {
+		Index int
+		models.Mower
+	}
 	for i, v := range lines[1:] {
-		if action := ParseActions(v); action != nil && i%2 != 0 {
-			actions = append(actions, *action)
+		if action := ParseAction(v); action != nil && i%2 != 0 {
+			actions = append(actions, struct {
+				Index int
+				models.Action
+			}{i, *action})
 		} else if mower := ParseMower(v); mower != nil && i%2 == 0 {
-			mowers = append(mowers, *mower)
+			mowers = append(mowers, struct {
+				Index int
+				models.Mower
+			}{i, *mower})
 		}
 	}
 	return boundaries, mowers, actions
 }
 func ParseBoundaries(input string) models.Boundaries {
-	var boundaries models.Boundaries
-	match, _ := restructure.Find(&boundaries, input)
-	if !match {
-		panic("failed to parse boundaries")
+	const boundariesPattern = `^(\d)\s(\d)$`
+	re := regexp.MustCompile(boundariesPattern)
+	if matchedBoundaries := re.FindStringSubmatch(input); matchedBoundaries == nil {
+		panic("failed to Parse boundaries")
+	} else {
+		matchedNorthLimit, _ := strconv.Atoi(matchedBoundaries[1])
+		matchedEastLimit, _ := strconv.Atoi(matchedBoundaries[2])
+		return models.Boundaries{
+			NorthLimit: matchedNorthLimit,
+			EastLimit:  matchedEastLimit,
+		}
 	}
-	return *models.NewBoundaries(boundaries.SNorthLimit, boundaries.SEastLimit)
 }
 func ParseMower(input string) *models.Mower {
-	var mower models.Mower
-	match, _ := restructure.Find(&mower, input)
-	if !match {
-		defer log.Println("failed to parse mower")
+	const mowerPattern = `^(\d)\s(\d)\s([NSEW])$`
+	re := regexp.MustCompile(mowerPattern)
+	if matchedMower := re.FindStringSubmatch(input); matchedMower == nil {
+		log.Println("failed to Parse mower from:", input)
 		return nil
+	} else {
+		matchedX, _ := strconv.Atoi(matchedMower[1])
+		matchedY, _ := strconv.Atoi(matchedMower[2])
+		matchedOrientation := matchedMower[3]
+		return &models.Mower{
+			Orientation: matchedOrientation,
+			X:           matchedX,
+			Y:           matchedY,
+		}
 	}
-	return models.NewMower(mower.SX, mower.SY, mower.Orientation)
 }
-func ParseActions(input string) *models.Action {
+func ParseAction(input string) *models.Action {
 	var actions models.Action
 	match, _ := restructure.Find(&actions, input)
 	if !match {
-		defer log.Println("failed to parse actions")
+		defer log.Println("failed to Parse actions")
 		return nil
 	}
 	return &models.Action{Instructions: actions.Instructions}
 }
-
-//boundariesPattern := regexp.MustCompile(`\d \d`)
-//wantPanic := boundariesPattern.FindString(input)
-//limits := strings.Split(wantPanic, " ")
-//northLimit, err0 := strconv.Atoi(limits[0])
-//eastLimit, err1 := strconv.Atoi(limits[1])
-//if err0 != nil || err1 != nil {
-//	log.Fatal(err1, err0)
-//	return nil
-//} else {
-//	return &mower.Boundaries{northLimit, eastLimit}
-//}

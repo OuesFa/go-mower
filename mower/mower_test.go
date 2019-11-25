@@ -1,4 +1,4 @@
-package mower
+package main
 
 import (
 	"github.com/ouesfa/go-mower/models"
@@ -12,14 +12,19 @@ func Test_move(t *testing.T) {
 		mower       models.Mower
 		boundaries  models.Boundaries
 	}
-	defaultMower := *models.NewMower("1", "1", "N")
-	defaultBoundaries := *models.NewBoundaries("5", "5")
+	defaultMower := models.Mower{X: 1, Y: 1, Orientation: "N"}
+	defaultBoundaries := models.Boundaries{NorthLimit: 5, EastLimit: 5}
 	tests := []struct {
 		name string
 		args args
 		want models.Mower
 	}{
-		{"tototo", args{'L', defaultMower, defaultBoundaries}, *models.NewMower("1", "1", "W")},
+		{name: "should return West given instruction Left when orientation is North",
+			args: args{
+				instruction: 'L',
+				mower:       defaultMower,
+				boundaries:  defaultBoundaries},
+			want: models.Mower{X: 1, Y: 1, Orientation: "W"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -40,7 +45,14 @@ func Test_moveForward(t *testing.T) {
 		args args
 		want models.Mower
 	}{
-		// TODO: Add test cases.
+		{"should not overstep boundaries", args{
+			mower:      models.Mower{X: 3, Y: 3, Orientation: "E"},
+			boundaries: models.Boundaries{NorthLimit: 3, EastLimit: 3},
+		}, models.Mower{X: 3, Y: 3, Orientation: "E"}},
+		{"should decrement X if orientation is West", args{
+			mower:      models.Mower{X: 3, Y: 3, Orientation: "W"},
+			boundaries: models.Boundaries{NorthLimit: 3, EastLimit: 3},
+		}, models.Mower{X: 2, Y: 3, Orientation: "W"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

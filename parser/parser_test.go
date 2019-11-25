@@ -19,8 +19,8 @@ func TestParseBoundaries(t *testing.T) {
 		want      models.Boundaries
 		wantPanic string
 	}{
-		{name: "should return boundaries given valid input", args: struct{ input string }{input: string("2 2")}, want: *models.NewBoundaries("2", "2")},
-		{name: "should panic given invalid input", args: struct{ input string }{input: string("invalid")}, wantPanic: "failed to parse boundaries"},
+		{name: "should return boundaries given valid input", args: struct{ input string }{input: string("2 2")}, want: models.Boundaries{2, 2}},
+		{name: "should panic given invalid input", args: struct{ input string }{input: string("invalid")}, wantPanic: "failed to Parse boundaries"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestParseBoundaries(t *testing.T) {
 	}
 }
 
-func TestParseActions(t *testing.T) {
+func TestParseAction(t *testing.T) {
 	type args struct {
 		input string
 	}
@@ -47,17 +47,16 @@ func TestParseActions(t *testing.T) {
 		want *models.Action
 		log  string
 	}{
-		{"should return action given valid input", args{input: "RRRLFF"}, &models.Action{Instructions: "RRRLFF"}, ""},
-		{"should return nil given invalid input", args{input: "&é4556"}, nil, "toto"},
-		//{"should log specific message given invalid input", args{input: "&é4556"}, nil, "toto"},
+		{name: "should return action given valid input", args: args{input: "RRRLFF"}, want: &models.Action{Instructions: "RRRLFF"}},
+		{name: "should return nil given invalid input", args: args{input: "&é4556"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			log.SetOutput(&buf)
-			got := ParseActions(tt.args.input)
+			got := ParseAction(tt.args.input)
 			if !reflect.DeepEqual(got, tt.want) && strings.HasSuffix(buf.String(), tt.log) {
-				t.Errorf("ParseActions() = %v, want %v", got, tt.want)
+				t.Errorf("ParseAction() = %v, want %v", got, tt.want)
 				t.Errorf("actual log = %v, expected log %v", buf.String(), tt.log)
 			}
 		})
@@ -73,8 +72,8 @@ func TestParseMower(t *testing.T) {
 		args args
 		want *models.Mower
 	}{
-		{"should return mower given valid input", args{input: "1 0 N"}, models.NewMower("1", "0", "N")},
-		{"should return nil given invalid orientation", args{input: "0 0 Z"}, nil},
+		{"should return mower given valid input", args{input: "1 0 N"}, &models.Mower{X: 1, Orientation: "N"}},
+		{name: "should return nil given invalid orientation", args: args{input: "0 0 Z"}},
 		{"should return nil given invalid coordinates", args{input: "22 0 N"}, nil},
 	}
 	for _, tt := range tests {
@@ -97,27 +96,39 @@ LFLFLFLFF`
 		name  string
 		args  args
 		want  models.Boundaries
-		want1 []models.Mower
-		want2 []models.Action
+		want1 []struct {
+			Index int
+			models.Mower
+		}
+		want2 []struct {
+			Index int
+			models.Action
+		}
 	}{
-		{"should parse valid input into boundaries, mowers & actions",
+		{"should Parse valid input into boundaries, mowers & actions",
 			args{lines},
-			*models.NewBoundaries("5", "5"),
-			[]models.Mower{*models.NewMower("1", "2", "N")},
-			[]models.Action{{Instructions: "LFLFLFLFF"}},
+			models.Boundaries{5, 5},
+			[]struct {
+				Index int
+				models.Mower
+			}{{0, models.Mower{1, 2, "N"}}},
+			[]struct {
+				Index int
+				models.Action
+			}{{1, models.Action{Instructions: "LFLFLFLFF"}}},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, got2 := parse(tt.args.input)
+			got, got1, got2 := Parse(tt.args.input)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parse() got = %v, want %v", got, tt.want)
+				t.Errorf("Parse() got = %v, want %v", got, tt.want)
 			}
 			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("parse() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("Parse() got1 = %v, want %v", got1, tt.want1)
 			}
 			if !reflect.DeepEqual(got2, tt.want2) {
-				t.Errorf("parse() got2 = %v, want %v", got2, tt.want2)
+				t.Errorf("Parse() got2 = %v, want %v", got2, tt.want2)
 			}
 		})
 	}
