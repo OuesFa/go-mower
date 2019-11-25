@@ -30,7 +30,8 @@ FFRFFRFRRF`
 			movedMowers = append(movedMowers, mowerWithIndex.Mower)
 		}
 	}
-	fmt.Println(movedMowers)
+	fmt.Println("input:\n" + lines)
+	fmt.Println("\nfinal positions:\n", movedMowers)
 }
 
 func move(instruction rune, mower models.Mower, boundaries models.Boundaries) models.Mower {
