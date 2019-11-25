@@ -19,15 +19,17 @@ fdgs sfdg
 3 3 E dsf
 FFRFFRFRRF`
 
-	boundaries, mowers, actions := parser.Parse(lines)
+	boundaries, mowersWithIndices, actionsWithIndices := parser.Parse(lines)
 	var movedMowers []models.Mower
-	for i, mowerWithIndex := range mowers {
-		mowerCorrespondsToAction := mowerWithIndex.Index-actions[i].Index == 1
-		if mowerCorrespondsToAction {
-			for _, instruction := range actions[i].Instructions {
-				mowerWithIndex.Mower = move(instruction, mowerWithIndex.Mower, boundaries)
+	for _, mowerWithIndex := range mowersWithIndices {
+		for _, actionWithIndex := range actionsWithIndices {
+			mowerCorrespondsToAction := actionWithIndex.Index-mowerWithIndex.Index == 1
+			if mowerCorrespondsToAction {
+				for _, instruction := range actionWithIndex.Instructions {
+					mowerWithIndex.Mower = move(instruction, mowerWithIndex.Mower, boundaries)
+				}
+				movedMowers = append(movedMowers, mowerWithIndex.Mower)
 			}
-			movedMowers = append(movedMowers, mowerWithIndex.Mower)
 		}
 	}
 	fmt.Println("input:\n" + lines)
