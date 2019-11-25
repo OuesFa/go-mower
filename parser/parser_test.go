@@ -30,8 +30,8 @@ func TestParseBoundaries(t *testing.T) {
 					t.Errorf("recover = %v, wantPanic = %v", r, tt.wantPanic)
 				}
 			}()
-			if got := ParseBoundaries(tt.args.input); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ParseBoundaries() = %v, want %v", got, tt.want)
+			if got := parseBoundaries(tt.args.input); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("parseBoundaries() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -54,9 +54,9 @@ func TestParseAction(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			log.SetOutput(&buf)
-			got := ParseAction(tt.args.input)
+			got := parseAction(tt.args.input)
 			if !reflect.DeepEqual(got, tt.want) && strings.HasSuffix(buf.String(), tt.log) {
-				t.Errorf("ParseAction() = %v, want %v", got, tt.want)
+				t.Errorf("parseAction() = %v, want %v", got, tt.want)
 				t.Errorf("actual log = %v, expected log %v", buf.String(), tt.log)
 			}
 		})
@@ -78,8 +78,8 @@ func TestParseMower(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ParseMower(tt.args.input); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ParseMower() = %v, want %v", got, tt.want)
+			if got := parseMower(tt.args.input); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("parseMower() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -96,26 +96,14 @@ LFLFLFLFF`
 		name  string
 		args  args
 		want  models.Boundaries
-		want1 []struct {
-			Index int
-			models.Mower
-		}
-		want2 []struct {
-			Index int
-			models.Action
-		}
+		want1 []models.MowerWithIndex
+		want2 []models.ActionWithIndex
 	}{
 		{"should Parse valid input into boundaries, mowers & actions",
 			args{lines},
 			models.Boundaries{5, 5},
-			[]struct {
-				Index int
-				models.Mower
-			}{{0, models.Mower{1, 2, "N"}}},
-			[]struct {
-				Index int
-				models.Action
-			}{{1, models.Action{Instructions: "LFLFLFLFF"}}},
+			[]models.MowerWithIndex{{0, models.Mower{1, 2, "N"}}},
+			[]models.ActionWithIndex{{1, models.Action{Instructions: "LFLFLFLFF"}}},
 		},
 	}
 	for _, tt := range tests {

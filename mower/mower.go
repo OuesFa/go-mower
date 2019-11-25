@@ -23,8 +23,8 @@ FFRFFRFRRF`
 	var movedMowers []models.Mower
 	for _, mowerWithIndex := range mowersWithIndices {
 		for _, actionWithIndex := range actionsWithIndices {
-			mowerCorrespondsToAction := actionWithIndex.Index-mowerWithIndex.Index == 1
-			if mowerCorrespondsToAction {
+			// bind a mower to its own action
+			if mowerCorrespondsToAction := actionWithIndex.Index-mowerWithIndex.Index == 1; mowerCorrespondsToAction {
 				for _, instruction := range actionWithIndex.Instructions {
 					mowerWithIndex.Mower = move(instruction, mowerWithIndex.Mower, boundaries)
 				}
