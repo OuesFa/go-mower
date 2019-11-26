@@ -19,8 +19,8 @@ func TestParseBoundaries(t *testing.T) {
 		want      models.Boundaries
 		wantPanic string
 	}{
-		{name: "should return boundaries given valid input", args: struct{ input string }{input: string("2 2")}, want: models.Boundaries{2, 2}},
-		{name: "should panic given invalid input", args: struct{ input string }{input: string("invalid")}, wantPanic: "failed to Parse boundaries"},
+		{name: "should return boundaries given valid input", args: struct{ input string }{input: "2 2"}, want: models.Boundaries{2, 2}},
+		{name: "should panic given invalid input", args: struct{ input string }{input: "invalid"}, wantPanic: "failed to Parse boundaries"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

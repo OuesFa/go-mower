@@ -1,25 +1,25 @@
 package main
 
 import (
-	"fmt"
 	"github.com/ouesfa/go-mower/models"
 	"github.com/ouesfa/go-mower/parser"
+	"io/ioutil"
+	"log"
 )
 
 func main() {
-	lines := `5 5
-1 2 N
-LFLFLFLFF
-sdf dsf sdcx
-FFRFFRFRRF
-3 3 E
-FFRFFRFRRF
-3 3 E
-fdgs sfdg
-3 3 E dsf
-FFRFFRFRRF`
 
-	boundaries, mowersWithIndices, actionsWithIndices := parser.Parse(lines)
+	input := readFile("mowers")
+
+	boundaries, mowersWithIndices, actionsWithIndices := parser.Parse(input)
+
+	movedMowers := moveAll(mowersWithIndices, actionsWithIndices, boundaries)
+
+	log.Println("input:\n" + input)
+	log.Println("\nfinal positions:\n", movedMowers)
+}
+
+func moveAll(mowersWithIndices []models.MowerWithIndex, actionsWithIndices []models.ActionWithIndex, boundaries models.Boundaries) []models.Mower {
 	var movedMowers []models.Mower
 	for _, mowerWithIndex := range mowersWithIndices {
 		for _, actionWithIndex := range actionsWithIndices {
@@ -32,8 +32,7 @@ FFRFFRFRRF`
 			}
 		}
 	}
-	fmt.Println("input:\n" + lines)
-	fmt.Println("\nfinal positions:\n", movedMowers)
+	return movedMowers
 }
 
 func move(instruction rune, mower models.Mower, boundaries models.Boundaries) models.Mower {
@@ -68,6 +67,15 @@ func moveForward(mower models.Mower, boundaries models.Boundaries) models.Mower 
 		}
 	}
 	return mower
+}
+
+func readFile(fileName string) string {
+	b, err := ioutil.ReadFile(fileName)
+	// just pass the file name
+	if err != nil {
+		log.Fatal("failed to parse input file, ", err)
+	}
+	return string(b)
 }
 
 var rightOrientation = map[string]string{

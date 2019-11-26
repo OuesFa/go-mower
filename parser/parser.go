@@ -26,6 +26,7 @@ func Parse(input string) (models.Boundaries, []models.MowerWithIndex, []models.A
 	}
 	return boundaries, mowers, actions
 }
+
 func parseBoundaries(input string) models.Boundaries {
 	const boundariesPattern = `^(\d)\s(\d)$`
 	re := regexp.MustCompile(boundariesPattern)
@@ -40,6 +41,7 @@ func parseBoundaries(input string) models.Boundaries {
 		}
 	}
 }
+
 func parseMower(input string) *models.Mower {
 	const mowerPattern = `^(\d)\s(\d)\s([NSEW])$`
 	re := regexp.MustCompile(mowerPattern)
@@ -57,6 +59,7 @@ func parseMower(input string) *models.Mower {
 		Y:           matchedY,
 	}
 }
+
 func parseAction(input string) *models.Action {
 	var actions models.Action
 	match, _ := restructure.Find(&actions, input)
